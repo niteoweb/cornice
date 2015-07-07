@@ -95,6 +95,7 @@ class ServiceDirective(Directive):
         service_node = nodes.section(ids=[service_id])
 
         title = '%s service at %s' % (service.name.title(), service.path)
+        title = title.replace('Collection_', '')
         service_node += nodes.title(text=title)
 
         if service.description is not None:
@@ -163,12 +164,16 @@ class ServiceDirective(Directive):
                 if validator.__doc__ is not None:
                     docstring += trim(validator.__doc__)
 
+            accept_node = False
             if 'accept' in args:
                 accept = to_list(args['accept'])
 
                 if callable(accept):
                     if accept.__doc__ is not None:
                         docstring += accept.__doc__.strip()
+                elif len(accept) == 1:
+                    accept_node = nodes.strong(
+                        text='Accepted content type: {}'.format(accept[0]))
                 else:
                     accept_node = nodes.strong(text='Accepted content types:')
                     node_accept_list = nodes.bullet_list()
@@ -179,12 +184,13 @@ class ServiceDirective(Directive):
                         temp += nodes.inline(text=item)
                         node_accept_list += temp
 
-                    method_node += accept_node
-
             node = rst2node(docstring)
             DocFieldTransformer(self).transform_all(node)
             if node is not None:
                 method_node += node
+
+            if accept_node:
+                method_node += accept_node
 
             renderer = args['renderer']
             if renderer == 'simplejson':
