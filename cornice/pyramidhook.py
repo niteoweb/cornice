@@ -151,7 +151,7 @@ def register_service_views(config, service):
     :param config: the pyramid configuration object that will be populated.
     :param service: the service object containing the definitions
     """
-    route_name = service.name
+    route_name = 'cornice_' + service.name
     services = config.registry.cornice_services
     prefix = config.route_prefix or ''
     services[prefix + service.path] = service

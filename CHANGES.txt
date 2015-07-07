@@ -1,3 +1,14 @@
+1.0.1-niteoweb-internal (2015-07-07)
+====================================
+
+- Prefix route names with ``cornice_`` so they don't class with existing
+  routes.
+  [zupo]
+
+- Add niteoweb-specific Sphinx integration code changes.
+  [zupo]
+
+
 1.0.0 (2015-04-15)
 ==================
 
