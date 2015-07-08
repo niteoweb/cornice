@@ -52,6 +52,7 @@ class ServiceDirective(Directive):
             :services: name1, name2
             :service: name1 # no need to specify both services and service.
             :ignore: a comma separated list of services names to ignore
+            :ignore-methods: a comma separated list of method names to ignore
             :app-title: replace default 'BIMT' with your own app title
             :app-url: replace default 'localhost:8080' with your own domain
 
@@ -61,6 +62,7 @@ class ServiceDirective(Directive):
                    'service': directives.unchanged,
                    'services': convert_to_list,
                    'ignore': convert_to_list,
+                   'ignore-methods': convert_to_list,
                    'app-title': directives.unchanged,
                    'app-url': directives.unchanged}
     domain = 'cornice'
@@ -90,7 +92,7 @@ class ServiceDirective(Directive):
 
         # filter the services according to the options we got
         services = get_services(names=names or None,
-                                exclude=self.options.get('exclude'))
+                                exclude=self.options.get('ignore'))
 
         return [self._render_service(s) for s in services]
 
@@ -108,6 +110,8 @@ class ServiceDirective(Directive):
         for method, view, args in service.definitions:
             if method == 'HEAD':
                 # Skip head - this is essentially duplicating the get docs.
+                continue
+            if method in self.options.get('ignore-methods', []):
                 continue
             method_id = '%s-%s' % (service_id, method)
             method_node = nodes.section(ids=[method_id])
