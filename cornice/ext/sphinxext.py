@@ -52,13 +52,17 @@ class ServiceDirective(Directive):
             :services: name1, name2
             :service: name1 # no need to specify both services and service.
             :ignore: a comma separated list of services names to ignore
+            :app-title: replace default 'BIMT' with your own app title
+            :app-url: replace default 'localhost:8080' with your own domain
 
     """
     has_content = True
     option_spec = {'modules': convert_to_list_required,
                    'service': directives.unchanged,
                    'services': convert_to_list,
-                   'ignore': convert_to_list}
+                   'ignore': convert_to_list,
+                   'app-title': directives.unchanged,
+                   'app-url': directives.unchanged}
     domain = 'cornice'
     doc_field_types = []
 
@@ -117,6 +121,11 @@ class ServiceDirective(Directive):
             else:
                 docstring = trim(view.__doc__ or "") + '\n'
 
+            print 'Replacing BIMT strings with app strings in API docstrings.'
+            docstring = docstring.replace(
+                'BIMT', self.options.get('app-title', 'BIMT'))
+            docstring = docstring.replace(
+                'http://localhost:8080', self.options.get('app-url', 'http://localhost:8080'))  # noqa
             if 'schema' in args:
                 schema = args['schema']
 
