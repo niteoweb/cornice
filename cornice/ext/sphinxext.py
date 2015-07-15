@@ -22,6 +22,9 @@ from docutils.parsers.rst import Directive, directives
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from sphinx.util.docfields import DocFieldTransformer
 
+import colander
+from pyramid_bimt.const import BimtPermissions
+
 MODULES = {}
 
 
@@ -130,6 +133,8 @@ class ServiceDirective(Directive):
                 'BIMT', self.options.get('app-title', 'BIMT'))
             docstring = docstring.replace(
                 'http://localhost:8080', self.options.get('app-url', 'http://localhost:8080'))  # noqa
+
+            attrs_node = None
             if 'schema' in args:
                 schema = args['schema']
 
@@ -138,11 +143,31 @@ class ServiceDirective(Directive):
                     attributes = schema.get_attributes(location=location)
                     if attributes:
                         attrs_node += nodes.inline(
-                            text='values in the %s' % location)
+                            text='Values in the %s:' % location)
                         location_attrs = nodes.bullet_list()
 
                         for attr in attributes:
                             temp = nodes.list_item()
+
+                            # check for permissions
+                            column_name = attr.name
+                            if column_name == 'version':
+                                column_name = 'v'
+                            elif column_name == 'created':
+                                column_name = 'c'
+                            elif column_name == 'modified':
+                                column_name = 'm'
+
+                            # find attr in SQLAlchemy table definition and
+                            # check that it has view permission
+                            columns = args['klass'].model.__table__.columns
+                            if column_name in columns.keys():
+                                info = getattr(columns[column_name], 'info', None)
+                                permission = info.get('colanderalchemy', {}).get('view_permission')
+                                if permission != BimtPermissions.view:
+                                    continue
+                            else:
+                                continue
 
                             # Get attribute data-type
                             if hasattr(attr, 'type'):
@@ -158,7 +183,8 @@ class ServiceDirective(Directive):
                             if not attr.required or attr.description:
                                 temp += nodes.inline(text=' - ')
                                 if not attr.required:
-                                    if attr.missing is not None:
+                                    if attr.missing is not None and \
+                                            not isinstance(attr.missing, colander._drop):
                                         default = json.dumps(attr.missing)
                                         temp += nodes.inline(
                                             text='(default: %s) ' % default)
@@ -171,7 +197,6 @@ class ServiceDirective(Directive):
                             location_attrs += temp
 
                         attrs_node += location_attrs
-                method_node += attrs_node
 
             for validator in args.get('validators', ()):
                 if validator.__doc__ is not None:
@@ -201,6 +226,9 @@ class ServiceDirective(Directive):
             DocFieldTransformer(self).transform_all(node)
             if node is not None:
                 method_node += node
+
+            if attrs_node:
+                method_node += attrs_node
 
             if accept_node:
                 method_node += accept_node
