@@ -128,7 +128,7 @@ class ServiceDirective(Directive):
             else:
                 docstring = trim(view.__doc__ or "") + '\n'
 
-            print 'Replacing BIMT strings with app strings in API docstrings.'
+            print('Replacing BIMT strings with app strings in API docstrings.')
             docstring = docstring.replace(
                 'BIMT', self.options.get('app-title', 'BIMT'))
             docstring = docstring.replace(
