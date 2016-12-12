@@ -1,11 +1,23 @@
-1.0.1-niteoweb-internal (2015-07-07)
+1.0.1-niteoweb-internal (2016-12-13)
 ====================================
+
+- Add niteoweb-specific Sphinx integration code changes.
+  [zupo]
 
 - Prefix route names with ``cornice_`` so they don't class with existing
   routes.
   [zupo]
 
-- Add niteoweb-specific Sphinx integration code changes.
+- Replace BIMT strings in docstrings wih app-specific strings.
+  [zupo]
+
+- Support for ColanderAlchemy schemas
+  [zupo]
+
+- Add ``.. exec::`` directive that executes Python code.
+  [zupo]
+
+- Python 3 support.
   [zupo]
 
 
